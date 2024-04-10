@@ -17,7 +17,7 @@ This project implements an unsupervised anomaly detection algorithm based on VAE
 
 ## 特点
 
-- 无监督学习:无需标注异常数据
+- 无监督学习：无需标注异常数据
 - 基于 VAE 的图像重建
 - CycleGAN 架构，实现稳定训练和局部判别
 - Segment Anything Model (SAM) 自动图像分割
@@ -36,11 +36,11 @@ The model is trained to minimize the reconstruction loss between the input image
 
 ## 架构
 
-VAE-CycleGAN 模型由两个主要组件构成:
+VAE-CycleGAN 模型由两个主要组件构成：
 
-1. **VAE 生成器**:一个变分自编码器，学习重建正常图像。它由编码器和解码器网络组成。
+1. **VAE 生成器**：一个变分自编码器，学习重建正常图像。它由编码器和解码器网络组成。
 
-2. **PatchGAN 判别器**:来自 CycleGAN 的判别器网络，对重建图像提供局部反馈。
+2. **PatchGAN 判别器**：来自 CycleGAN 的判别器网络，对重建图像提供局部反馈。
 
 该模型通过最小化输入图像与其重建图像之间的重建损失，以及来自判别器的对抗损失来进行训练。在我们的 CycleGAN 实现中，我们修改了循环重建过程。我们不采用原始的循环重建，而是将原始图像 A 输入以获得重建图像 B，然后将重建图像 B 输入以获得新的重建图像 C。这种修改大大增强了模型处理含有异常的图像的能力。
 
