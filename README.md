@@ -1,10 +1,10 @@
-# VAE-CycleGAN Unsupervised Anomaly Detection
+# VAE-CycleGAN Unsupervised Defect Detection
 
-This project implements an unsupervised anomaly detection algorithm based on VAE-CycleGAN for image reconstruction. The algorithm combines the power of Variational Autoencoder (VAE) and CycleGAN to detect anomalies in images without the need for labeled data.
+This project implements an unsupervised defect detection algorithm based on VAE-CycleGAN for image reconstruction. The algorithm combines the power of Variational Autoencoder (VAE) and CycleGAN to detect defects/anomalies in images without the need for labeled data.
 
-# VAE-CycleGAN 无监督异常检测
+# VAE-CycleGAN 无监督缺陷检测
 
-本项目实现了一种基于 VAE-CycleGAN 的图像重建无监督异常检测算法。该算法结合了变分自编码器 (VAE) 和 CycleGAN 的优势，无需标注数据即可检测图像中的异常。
+本项目实现了一种基于 VAE-CycleGAN 的图像重建无监督缺陷检测算法。该算法结合了变分自编码器 (VAE) 和 CycleGAN 的优势，无需标注数据即可检测图像中的缺陷/异常。
 
 ## Features
 
