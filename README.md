@@ -13,6 +13,7 @@ This project implements an unsupervised anomaly detection algorithm based on VAE
 - CycleGAN architecture for stable training and local discrimination
 - Segment Anything Model (SAM) for automatic image segmentation
 - Data augmentation techniques for improved performance
+- Use MAML Meta learning to train a general model for avoiding overfitting.
 
 ## 特点
 
@@ -21,6 +22,7 @@ This project implements an unsupervised anomaly detection algorithm based on VAE
 - CycleGAN 架构,实现稳定训练和局部判别
 - Segment Anything Model (SAM) 自动图像分割
 - 数据增强技术,提升存在缺陷时重建的性能
+- 使用元学习得到更好的通用模型，避免过拟合。
 
 ## Architecture
 

@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+from PIL import Image
 from torch.utils.data import DataLoader
 
 from AutoEncoder import *
@@ -165,65 +166,30 @@ def merge_datasets(tensor_dataset_list: list):
 
 
 def load_datasets(zoom_factor=1.2):
-    # 加载训练数据集
-    # loaded_datasets = []
-    # for i in range(1, 6):
-    #     dataset_path = os.path.join(datasets_dir, f'train_dataset_{i}.pt')
-    #     if os.path.isfile(dataset_path):  # 如果数据集文件存在
-    #         dataset = torch.load(dataset_path)
-    #         print(f"Dataset {i} has been loaded from {dataset_path}.")
-    #
-    #         # 对数据集中的每个样本进行裁剪和缩放
-    #         augmented_dataset = []
-    #         for image_tensor in dataset:
-    #             augmented_tensor = augment_image_tensor(image_tensor, zoom_factor)
-    #             augmented_dataset.append(augmented_tensor)
-    #
-    #         loaded_datasets.append(augmented_dataset)
-    #     else:
-    #         print(f"Error: Dataset {i} was not found at {dataset_path}.")
-    #         # 这里可以加上异常处理或重新加载数据集的代码
-    image_directory1 = "./cut_imgs/"
-    image_directory2 = "./cut_images_5/"
-
-    # 定义图片的转换操作
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        # 可以根据需要添加其他转换操作
-    ])
+    image_directory = "./cut_imgs/"
 
     # 读取图片并创建数据集
-    loaded_datasets = [load_image_datasets(image_directory1), load_image_datasets(image_directory2)]
+    loaded_datasets = [load_image_datasets(image_directory)]
 
     # 合并训练数据集
     combined_dataset = torch.utils.data.ConcatDataset(loaded_datasets)
     general_data = augment_tensor_dataset(combined_dataset)
 
     # 加载测试数据集
-    test_dataset_path_1 = './datasets/test_dataset.pt'
-    test_dataset_path_2 = './datasets/test_dataset_5.pt'
+    test_dataset_path = './datasets/test_dataset.pt'
 
-    if os.path.isfile(test_dataset_path_1) and os.path.isfile(test_dataset_path_2):
-        specific_data_1 = torch.load(test_dataset_path_1)
-        specific_data_2 = torch.load(test_dataset_path_2)
-
-        # 将两个测试数据集合并
-        specific_data = torch.cat((specific_data_1, specific_data_2), dim=0)
-
-        print(f"Test dataset has been loaded and merged from {test_dataset_path_1} and {test_dataset_path_2}.")
-
-        # 对测试数据集中的每个样本进行裁剪和缩放
+    if os.path.isfile(test_dataset_path):
+        specific_data = torch.load(test_dataset_path)
+        print(f"Test dataset has been loaded and merged from {test_dataset_path}.")
         augmented_specific_data = []
         for image_tensor in specific_data:
-            augmented_tensor = augment_image_tensor(image_tensor, zoom_factor)
+            augmented_tensor = do_nothing(image_tensor, zoom_factor)
             augmented_specific_data.append(augmented_tensor)
-
         specific_data = augmented_specific_data
 
     else:
         print("Test dataset files not found.")
         specific_data = None
-
     return general_data, specific_data
 
 
@@ -232,8 +198,6 @@ if __name__ == '__main__':
     # general_data: 通用训练材料
     # specific_data: 指定任务的训练素材
     # 在主函数中调用 load_datasets 函数
-    datasets_dir = './datasets/'
-    test_dataset_dir = './datasets/test_dataset.pt'
     general_data, specific_data = load_datasets()
 
     general_dataset = TensorDataset(general_data)
