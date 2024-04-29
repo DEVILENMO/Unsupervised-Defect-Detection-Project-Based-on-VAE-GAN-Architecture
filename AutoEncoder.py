@@ -254,8 +254,8 @@ class VAEModel(nn.Module):
 
 
 class VAEModelLoader(ModelLoader):
-    def __init__(self, train_dataset, test_dataset, batch_size, model_path: str, if_es=False, if_debug=False):
-        super().__init__(train_dataset, test_dataset, batch_size, model_path, if_es, if_debug)
+    def __init__(self, train_dataset, test_dataset, batch_size, model_path: str, if_early_stop=False, debug_mode=False):
+        super().__init__(train_dataset, test_dataset, batch_size, model_path, if_early_stop, debug_mode)
         print('-' * 10, 'Loading VAE model', '-' * 10)
         # encoder
         self.latent_dim = latent_dim  # latent vector dimension
@@ -277,7 +277,7 @@ class VAEModelLoader(ModelLoader):
         self.train_losses = []
         self.test_losses = []
 
-    def __train_epoch(self):
+    def _train_epoch(self):
         # set the train mode
         self.model.train()
         # loss of the epoch
@@ -310,7 +310,7 @@ class VAEModelLoader(ModelLoader):
 
         return train_loss / len(self.train_dataset)
 
-    def __test_epoch(self):
+    def _test_epoch(self):
         self.model.eval()
         test_loss = 0
         with torch.no_grad():
@@ -338,15 +338,15 @@ class VAEModelLoader(ModelLoader):
         return test_loss / len(self.test_dataset)
 
     def train(self, epochs=50, test_interval=10):
-        if self.if_es:
+        if self.if_early_stop:
             # 早停策略防止过拟合
             best_test_loss = float('inf')
             patience_counter = 0
 
         for e in range(epochs):
             print('-' * 10, 'Train epoch', e, 'started!', '-' * 10)
-            train_loss = self.__train_epoch()
-            test_loss = self.__test_epoch()
+            train_loss = self._train_epoch()
+            test_loss = self._test_epoch()
             print(f'Epoch {e}, Train Loss: {train_loss:.2f}, Test Loss: {test_loss:.2f}')
 
             self.train_losses.append(train_loss)
@@ -368,7 +368,7 @@ class VAEModelLoader(ModelLoader):
                     output_name = f"epoch_{e + 1}_test_img_{i + 1}"
                     self.regenerate_test(Image.open(file_path), output_name)
 
-            if self.if_es:
+            if self.if_early_stop:
                 # 计算早停累计
                 if best_test_loss > test_loss:
                     best_test_loss = test_loss

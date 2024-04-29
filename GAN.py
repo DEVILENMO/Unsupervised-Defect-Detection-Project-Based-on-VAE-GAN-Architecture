@@ -82,9 +82,9 @@ def discriminator_loss(real_out, fake_out):
 
 
 class VAEGANModelLoader(ModelLoader):
-    def __init__(self, train_dataset, test_dataset, batch_size, model_path: str, discriminator_path: str, if_es=False,
-                 if_debug=False):
-        super().__init__(train_dataset, test_dataset, batch_size, model_path, if_es, if_debug)
+    def __init__(self, train_dataset, test_dataset, batch_size, model_path: str, discriminator_path: str, if_early_stop=False,
+                 debug_mode=False):
+        super().__init__(train_dataset, test_dataset, batch_size, model_path, if_early_stop, debug_mode)
         print('-' * 10, 'Loading VAE-GAN model', '-' * 10)
         # encoder
         self.latent_dim = latent_dim  # latent vector dimension
