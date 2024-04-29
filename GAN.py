@@ -146,7 +146,7 @@ class VAEGANModelLoader(ModelLoader):
         else:
             print("No saved model found at '{}'. Starting from scratch.".format(self.discriminator_path))
 
-    def __test_epoch_vae(self):
+    def _test_epoch_vae(self):
         self.model.eval()
         test_loss = 0
         with torch.no_grad():
@@ -302,7 +302,7 @@ class VAEGANModelLoader(ModelLoader):
             train_losses_G.append(train_loss_G)
             train_losses_D.append(train_loss_D)
 
-            test_loss_g = self.__test_epoch_vae()
+            test_loss_g = self._test_epoch_vae()
             test_losses_G.append(test_loss_g)
 
             print(
