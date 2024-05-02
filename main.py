@@ -29,7 +29,6 @@ def calculate_ssim(img1, img2):
 # 对图像进行预处理
 def preprocess_image(img):
     img = cv2.medianBlur(img, 3)  # 中值滤波去噪
-    # img = cv2.equalizeHist(img)  # 直方图均衡化增强对比度
     return img
 
 
@@ -40,7 +39,6 @@ def postprocess_diff(diff_img):
 
     # 低阈值二值化
     _, diff_bin = cv2.threshold(diff_img, 45, 255, cv2.THRESH_BINARY)  # 调整低阈值
-    # _, diff_bin = cv2.threshold(diff_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     # 形态学操作
     diff_bin = cv2.dilate(diff_bin, np.ones((3, 3)), iterations=1)  # 膨胀操作
@@ -62,18 +60,6 @@ def postprocess_diff(diff_img):
         if cv2.countNonZero(high_thresh_bin & component_mask) > 0:
             # 如果存在非零像素,则保留该连通域
             processed_diff_bin |= component_mask
-
-    # scale_factor = 0.5
-    # resized_high_thresh_bin = cv2.resize(high_thresh_bin, None, fx=scale_factor, fy=scale_factor)
-    # resized_diff_bin = cv2.resize(diff_bin, None, fx=scale_factor, fy=scale_factor)
-    # resized_processed_diff_bin = cv2.resize(processed_diff_bin, None, fx=scale_factor, fy=scale_factor)
-
-    # cv2.imshow("High Threshold Binary", resized_high_thresh_bin)
-    # cv2.imshow("Low Threshold Binary", resized_diff_bin)
-    # cv2.imshow("Processed Diff Binary", resized_processed_diff_bin)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
     return processed_diff_bin
 
 
@@ -99,8 +85,6 @@ def pcb_defection_detection(file_path, VAE_model=None, reason_mode='cuda'):
     x_min, x_max, y_min, y_max = coordinates
     t1 = time.time()
     print(f'Cut PCB from image successfully, take {t1 - t0} seconds.')
-    # plt.imshow(mask_image)
-    # plt.show()
     device = reason_mode
     VAE_model.to(device)
     image_tensor = convert_image_to_tensor(mask_image)
@@ -137,8 +121,6 @@ def pcb_defection_detection(file_path, VAE_model=None, reason_mode='cuda'):
     gray_image, mask, _ = apply_mask(rgb_image, mask)
     regenerated_img_np = cv2.cvtColor(gray_image, cv2.COLOR_RGB2GRAY)
     regenerated_img_np = cv2.resize(regenerated_img_np, (512, 512))
-    # plt.imshow(regenerated_img)
-    # plt.show()
 
     # 读取并预处理原始图像和重建图像
     ori_image = load_image_with_alpha_channel(file_path)

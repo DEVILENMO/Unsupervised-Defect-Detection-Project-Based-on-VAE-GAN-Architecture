@@ -121,32 +121,6 @@ def sample_task_data(general_loader, specific_loader, num_samples):
     return task_data.to(device)
 
 
-def augment_image_tensor(image_tensor, zoom_factor=1.2):
-    # 转换为PIL图像
-    image = transforms.ToPILImage()(image_tensor)
-
-    # # 获取图像尺寸
-    # width, height = image.size
-    #
-    # # 计算裁剪区域的坐标
-    # crop_size = int(min(width, height) / zoom_factor)
-    # left = (width - crop_size) // 2
-    # top = (height - crop_size) // 2
-    # right = left + crop_size
-    # bottom = top + crop_size
-    #
-    # # 裁剪图像
-    # cropped_image = image.crop((left, top, right, bottom))
-
-    # 将裁剪后的图像缩放回原始尺寸
-    resized_image = image.resize((512, 512), resample=Image.BICUBIC)
-
-    # 转换回张量
-    resized_tensor = transforms.ToTensor()(resized_image)
-
-    return resized_tensor
-
-
 def seg_tensor_dataset(tensor_dataset):
     part1, part2 = [], []
     for index, tensor in enumerate(tensor_dataset):

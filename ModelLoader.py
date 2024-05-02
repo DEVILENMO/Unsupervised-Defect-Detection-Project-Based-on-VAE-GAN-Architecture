@@ -37,7 +37,6 @@ class ModelLoader:
             self.train_iterator = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True)
             self.test_iterator = DataLoader(self.test_dataset, batch_size=self.batch_size)
 
-
         self.if_early_stop = if_early_stop
         self.debug_mode = debug_mode
         if debug_mode:
@@ -76,6 +75,7 @@ class ModelLoader:
         if self.predict_mode:
             print('No data given, model is running in predict mode.')
             return
+        print('Start training...')
         if self.if_early_stop:
             # 早停策略防止过拟合
             best_test_loss = float('inf')
