@@ -33,6 +33,7 @@ class ModelLoader:
             test_ratio = 0.1
             train_size = int(len(train_dataset) * (1 - test_ratio))
             test_size = len(train_dataset) - train_size
+            self.batch_size = batch_size
             self.train_dataset, self.test_dataset = random_split(train_dataset, [train_size, test_size])
             self.train_iterator = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True)
             self.test_iterator = DataLoader(self.test_dataset, batch_size=self.batch_size)
