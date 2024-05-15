@@ -1,4 +1,4 @@
-from DataLoader import *
+from Datasets import TensorDataset
 from GenerateTestDataset import load_test_dataset
 from GAN import *
 from DataAugment import *

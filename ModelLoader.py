@@ -90,7 +90,7 @@ class ModelLoader:
                 self.scheduler.step()
 
             self.save_model(test_loss)
-            if (epoch + 1) % test_interval == 0:
+            if epoch % test_interval == 0:
                 self.test()
 
             if self.if_early_stop:

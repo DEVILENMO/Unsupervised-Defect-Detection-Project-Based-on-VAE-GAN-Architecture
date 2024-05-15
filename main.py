@@ -77,7 +77,7 @@ def resize_defection_map_to_origin_size(defection_map, mask_image, coordinates, 
     return origin_defection_map
 
 
-def pcb_defection_detection(file_path, VAE_model=None, reason_mode='cuda'):
+def defection_detection(file_path, VAE_model=None, reason_mode='cuda'):
     image = Image.open(file_path)
     print('prepare to cut PCB from the image...')
     t0 = time.time()
@@ -202,8 +202,8 @@ if __name__ == "__main__":
             print("跳过文件: {}".format(filename))
             continue
 
-        score, diff_bin = pcb_defection_detection(os.path.join(input_dir, filename), VAE_model=VAEModel,
-                                                 reason_mode=str(device))
+        score, diff_bin = defection_detection(os.path.join(input_dir, filename), VAE_model=VAEModel,
+                                              reason_mode=str(device))
 
         # 打印返回的分数
         print("相似度:", score)

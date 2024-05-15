@@ -1,6 +1,5 @@
 import math
 import sys
-from typing import Tuple, Optional, List
 
 sys.path.append("..")
 
@@ -68,7 +67,7 @@ def scale_image_to_fit_window(image, max_width=896, max_height=750):
     return scaled_image
 
 
-def apply_mask(image, mask, alpha_channel=True, kernel_size=()) -> Tuple[np.ndarray, np.ndarray]:
+def apply_mask(image, mask, alpha_channel=True, kernel_size=()) -> tuple[np.ndarray, np.ndarray]:
     if (isinstance(kernel_size, tuple) or isinstance(kernel_size, list)) and len(kernel_size) == 2:
         # 将布尔类型的mask转换为uint8类型
         print('优化mask...')
@@ -254,7 +253,7 @@ if __name__ == '__main__':
         # plt.figure(figsize=(20,20))
         # plt.imshow(image)
 
-        classification_discriminator = PCBDiscriminator('./saved_model/Discriminator_5.pth', device='cuda')
+        classification_discriminator = TargetDiscriminator('./saved_model/Discriminator_5.pth', device='cuda')
 
         classification_prob = classification_discriminator.predict(Image.fromarray(image))
         print(f'The probability of being class 5 is: {classification_prob:.4f}')

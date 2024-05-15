@@ -63,3 +63,7 @@ def display_image(image):
     plt.imshow(image)
     plt.axis('off')
     plt.show()
+
+
+def convert_to_rgb(img):
+    return img.convert('RGB')

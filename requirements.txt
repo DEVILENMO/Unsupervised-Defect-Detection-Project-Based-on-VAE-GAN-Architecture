@@ -1,0 +1,8 @@
+datasets==2.14.7
+opencv-python==4.8.1.78
+torch==2.1.0+cu121
+torchvision==0.16.0+cu121
+
+numpy~=1.26.4
+pillow~=9.3.0
+matplotlib~=3.8.0
