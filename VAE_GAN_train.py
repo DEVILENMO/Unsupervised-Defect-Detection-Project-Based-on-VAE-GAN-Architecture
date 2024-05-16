@@ -28,8 +28,8 @@ def load_image_datasets(image_dir):
 
 if __name__ == '__main__':
     loaded_datasets = []
-    """从'./cut_imgs/目录中读取所有图片并加载成数据集用于训练'"""
-    image_directory = "./cut_imgs/"
+    """从'./train_images/目录中读取所有图片并加载成数据集用于训练'"""
+    image_directory = "./train_images/"
     # 读取图片并创建数据集
     dataset = load_image_datasets(image_directory)
     loaded_datasets.append(dataset)

@@ -1,6 +1,5 @@
 from copy import deepcopy
 
-from PIL import Image
 from torch.utils.data import DataLoader
 
 from AutoEncoder import *

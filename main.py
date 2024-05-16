@@ -1,9 +1,9 @@
 import time
 
 from AutoEncoder import *
+from CutTarget import cut_target_from_image, apply_mask
 from ImagePreProcessing import *
 from ImageTools import *
-from CutTarget import cut_pcb_from_image, apply_mask, pad_to_square
 
 
 # 计算两个图像之间的结构相似性指数(SSIM)
@@ -81,7 +81,7 @@ def defection_detection(file_path, VAE_model=None, reason_mode='cuda'):
     image = Image.open(file_path)
     print('prepare to cut PCB from the image...')
     t0 = time.time()
-    mask_image, coordinates, mask, info = cut_pcb_from_image(image, reason_mode=reason_mode)
+    mask_image, coordinates, mask, info = cut_target_from_image(image, reason_mode=reason_mode)
     x_min, x_max, y_min, y_max = coordinates
     t1 = time.time()
     print(f'Cut PCB from image successfully, take {t1 - t0} seconds.')
@@ -118,7 +118,7 @@ def defection_detection(file_path, VAE_model=None, reason_mode='cuda'):
     regenerated_img_np = (regenerated_img_np * 255).astype(np.uint8)
     regenerated_img_np_origin = cv2.resize(regenerated_img_np, (mask.shape[1], mask.shape[0]))
     rgb_image = cv2.cvtColor(regenerated_img_np_origin, cv2.COLOR_GRAY2RGB)
-    gray_image, mask, _ = apply_mask(rgb_image, mask)
+    gray_image, mask = apply_mask(rgb_image, mask)
     regenerated_img_np = cv2.cvtColor(gray_image, cv2.COLOR_RGB2GRAY)
     regenerated_img_np = cv2.resize(regenerated_img_np, (512, 512))
 
@@ -127,7 +127,7 @@ def defection_detection(file_path, VAE_model=None, reason_mode='cuda'):
     original_image = ori_image.copy()
     original_size = original_image.size
     original_image = np.array(original_image)
-    original_image_crop, mask, _ = apply_mask(original_image[y_min:y_max + 1, x_min:x_max + 1], mask)
+    original_image_crop, mask = apply_mask(original_image[y_min:y_max + 1, x_min:x_max + 1], mask)
     print(original_image_crop.shape)
     original_image = cv2.cvtColor(original_image_crop, cv2.COLOR_RGB2GRAY)
     original_image = preprocess_image(original_image)

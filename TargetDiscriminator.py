@@ -52,4 +52,4 @@ if __name__ == '__main__':
     for path, prob in zip(image_paths, probs):
         # 获取图片名称
         image_name = os.path.basename(path)
-        print(f'The probability of {image_name} being a real PCB is: {prob:.4f}')
+        print(f'The probability of {image_name} being a real target is: {prob:.4f}')

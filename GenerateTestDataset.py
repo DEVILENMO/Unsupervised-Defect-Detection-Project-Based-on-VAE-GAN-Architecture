@@ -5,7 +5,7 @@ import torch
 from ImageTools import *
 
 
-def load_test_dataset(test_imgs_dir='./test_imgs/'):
+def load_test_dataset(test_imgs_dir='./test_images/'):
     # 检查测试图片目录是否存在
     if not os.path.exists(test_imgs_dir):
         print(f"Test images directory not found: {test_imgs_dir}")

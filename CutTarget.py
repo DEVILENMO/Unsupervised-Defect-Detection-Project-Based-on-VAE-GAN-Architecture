@@ -1,8 +1,5 @@
 import math
 import sys
-
-sys.path.append("..")
-
 import cv2
 import matplotlib
 import numpy
@@ -10,6 +7,8 @@ import numpy as np
 
 from TargetDiscriminator import *
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
+
+sys.path.append("..")
 
 matplotlib.use('TkAgg')
 crop_mode = True  # 是否裁剪到最小范围
@@ -147,11 +146,11 @@ def save_masked_image(image, mask, output_dir, filename, crop_mode_, kernel_size
         y_min, y_max, x_min, x_max = y.min(), y.max(), x.min(), x.max()
         cropped_mask = mask[y_min:y_max + 1, x_min:x_max + 1]
         cropped_image = image[y_min:y_max + 1, x_min:x_max + 1]
-        masked_image, cropped_mask, _ = apply_mask(cropped_image, cropped_mask, kernel_size=kernel_size)
+        masked_image, cropped_mask = apply_mask(cropped_image, cropped_mask, kernel_size=kernel_size)
         masked_image, info = pad_to_square(masked_image)
         print(masked_image.shape)
     else:
-        masked_image, mask, _ = apply_mask(image, mask, kernel_size=kernel_size)
+        masked_image, mask = apply_mask(image, mask, kernel_size=kernel_size)
     filename = filename[:filename.rfind('.')] + '.png'
     new_filename = get_next_filename(output_dir, filename)
 
@@ -172,14 +171,14 @@ def show_anns(anns):
     return sorted_anns
 
 
-def cut_pcb_from_image(origin_image, reason_mode='cuda', area_lower_limit=30000, area_upper_limit=math.inf,
-                       pcb_prob=0.2):
+def cut_target_from_image(origin_image, reason_mode='cuda', area_lower_limit=30000, area_upper_limit=math.inf,
+                          pcb_prob=0.2):
     """
     Input:
             origin image: PIL image
             reason mode: cpu or gpu
-            area lower limit: the min area of PCB  default = 30000
-            area upper limit: the max area of PCB, default = positive infinity
+            area lower limit: the min area of target object, default = 30000
+            area upper limit: the max area of target object, default = positive infinity
             pcb prob: the probability of cropped image being a real PCB, default = 0.2
     Output:
             masked_image: origin size
@@ -214,7 +213,7 @@ def cut_pcb_from_image(origin_image, reason_mode='cuda', area_lower_limit=30000,
         y_min, y_max, x_min, x_max = y.min(), y.max(), x.min(), x.max()
         cropped_mask = target_mask[y_min:y_max + 1, x_min:x_max + 1]
         cropped_image = image_crop[y_min:y_max + 1, x_min:x_max + 1]
-        masked_image_cut, cropped_mask, _ = apply_mask(cropped_image, cropped_mask)
+        masked_image_cut, cropped_mask = apply_mask(cropped_image, cropped_mask)
         prob_pcb = target_discriminator.predict(Image.fromarray(masked_image_cut))
         print(f'The probability of being a real PCB is: {prob_pcb:.4f}')
         if prob_pcb > pcb_prob:
@@ -236,7 +235,7 @@ def cut_pcb_from_image(origin_image, reason_mode='cuda', area_lower_limit=30000,
                     y_min -= (diff // 2) - 1
             cropped_mask = target_mask[y_min:y_max + 1, x_min:x_max + 1]
             cropped_image = image_crop[y_min:y_max + 1, x_min:x_max + 1]
-            masked_image_cut, cropped_mask, _ = apply_mask(cropped_image, cropped_mask)
+            masked_image_cut, cropped_mask = apply_mask(cropped_image, cropped_mask)
             break
     return Image.fromarray(masked_image_cut), [x_min, x_max, y_min, y_max], cropped_mask, info
 
@@ -253,16 +252,6 @@ if __name__ == '__main__':
         # plt.figure(figsize=(20,20))
         # plt.imshow(image)
 
-        classification_discriminator = TargetDiscriminator('./saved_model/Discriminator_5.pth', device='cuda')
-
-        classification_prob = classification_discriminator.predict(Image.fromarray(image))
-        print(f'The probability of being class 5 is: {classification_prob:.4f}')
-
-        if classification_prob > 0.3:
-            classification = '5'
-        else:
-            classification = '14'
-
         mask_generator = SamAutomaticMaskGenerator(sam)
 
         masks = mask_generator.generate(image)
@@ -270,57 +259,37 @@ if __name__ == '__main__':
         # plt.figure(figsize=(20, 20))
         # plt.imshow(image)
 
-        # masks_list = show_anns(masks)
+        masks_list = show_anns(masks)
 
-        #
-        # # 遍历分析每个预测的掩码
-        # for i, mask in enumerate(masks):
-        #     print(f"Mask {i}:")
-        #     for key, value in mask.items():
-        #         print(f"{key}: {value}")
-        #     print("---")
+        # 遍历分析每个预测的掩码
+        for _, mask in enumerate(masks):
+            print(f"Mask {_}:")
+            for key, value in mask.items():
+                print(f"{key}: {value}")
+            print("---")
 
-        # for j in range(len(masks_list)):
-        #     if masks_list[j]['area'] < 60000:
-        #         target_mask = masks_list[j]['segmentation']
+        target_mask = None
+        MIN_AREA = 40000
+        for j in range(len(masks_list)):
+            if MIN_AREA < masks[j]['area']:
+                target_mask = masks[j]['segmentation']
 
-        if classification == '14':
-            for j in range(len(masks_list)):
-                if 40000 < masks[j]['area']:
-                    target_mask = masks[j]['segmentation']
-
-                binary_image = np.uint8(target_mask) * 255
-                resized_image = cv2.resize(binary_image, (image_crop.shape[1], image_crop.shape[0]))
-                target_mask = resized_image > 0
-
-                # masked_image = apply_mask(image_crop, target_mask)
-
-                y, x = np.where(target_mask)
-                y_min, y_max, x_min, x_max = y.min(), y.max(), x.min(), x.max()
-                cropped_mask = target_mask[y_min:y_max + 1, x_min:x_max + 1]
-                cropped_image = image_crop[y_min:y_max + 1, x_min:x_max + 1]
-                masked_image_cut, cropped_mask, _ = apply_mask(cropped_image, cropped_mask)
-                prob_pcb = discriminator.predict(Image.fromarray(masked_image_cut))
-                print(f'The probability of being a real PCB is: {prob_pcb:.4f}')
-                if prob_pcb > 0.2:
-                    kernel_size = 0
-                    break
-
-        else:
-            masks_list = show_anns(masks)
-            target_mask = masks_list[0]['segmentation']
-
-            kernel_size = ()
-            if 440000 < masks_list[0]['area'] < 450000:
-                kernel_size = general_kernel1
-            elif masks_list[0]['area'] > 450000:
-                kernel_size = general_kernel2
-
+        if target_mask is not None:
             binary_image = np.uint8(target_mask) * 255
             resized_image = cv2.resize(binary_image, (image_crop.shape[1], image_crop.shape[0]))
             target_mask = resized_image > 0
 
-        save_masked_image(image_crop, target_mask, output_dir, filename, crop_mode_=crop_mode, kernel_size=kernel_size)
+            # masked_image = apply_mask(image_crop, target_mask)
+
+            y, x = np.where(target_mask)
+            y_min, y_max, x_min, x_max = y.min(), y.max(), x.min(), x.max()
+            cropped_mask = target_mask[y_min:y_max + 1, x_min:x_max + 1]
+            cropped_image = image_crop[y_min:y_max + 1, x_min:x_max + 1]
+            masked_image_cut, cropped_mask = apply_mask(cropped_image, cropped_mask)
+
+            save_masked_image(image_crop, target_mask, output_dir, filename, crop_mode_=crop_mode, kernel_size=0)
+        else:
+            print('未找到区域！')
 
         # plt.axis('off')
         # plt.show()
