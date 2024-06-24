@@ -74,4 +74,16 @@ VAE-CycleGAN 模型由两个主要组件构成：
 
 ## 效果演示
 
+```Python
+The probability of being a real PCB is: 0.2938
+Cut PCB from image successfully, take 3.729628086090088 seconds.
+VAE input image loaded, take 0.01900482177734375 seconds.
+VAE has regenerated the input image, take 0.08401799201965332 seconds.
+Dealing with regenerated image...
+(1139, 1139, 4)
+Structural Similarity (SSIM) Index:  0.856191228429266
+Total time cost: 3.981684923171997 seconds.
+相似度: 0.856191228429266
+```
+
 ![Effect Demonstration](./resource/effect.png)

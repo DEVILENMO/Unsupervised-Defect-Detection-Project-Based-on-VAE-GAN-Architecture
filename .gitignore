@@ -161,3 +161,4 @@ cython_debug/
 
 # project
 saved_model/
+input/test.bmp

@@ -202,7 +202,7 @@ if __name__ == "__main__":
             print("跳过文件: {}".format(filename))
             continue
 
-        score, diff_bin = defection_detection(os.path.join(input_dir, filename), VAE_model=VAEModel,
+        score, diff_bin = defection_detection(os.path.join(input_dir, filename), VAE_model=VAE_model,
                                               reason_mode=str(device))
 
         # 打印返回的分数
