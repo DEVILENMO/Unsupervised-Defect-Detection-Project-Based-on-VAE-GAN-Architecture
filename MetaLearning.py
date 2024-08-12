@@ -179,8 +179,8 @@ if __name__ == '__main__':
     general_loader = DataLoader(general_dataset, batch_size=5, shuffle=True)
     specific_loader = DataLoader(specific_dataset, batch_size=5, shuffle=True)
 
-    # 定义MLMA模型
-    mlma_model = MAML(1e-5, 1e-8, device)
+    # 定义MAML模型
+    maml_model = MAML(1e-5, 1e-8, device)
 
     model_path = './saved_model/VAE_cold_start.pth'
     model_dir = os.path.dirname(model_path)
@@ -192,7 +192,7 @@ if __name__ == '__main__':
         print(f"Created directory '{model_dir}' for saving models.")
     if os.path.isfile(model_path):
         try:
-            mlma_model.model.load_state_dict(torch.load(model_path, map_location=device))
+            maml_model.model.load_state_dict(torch.load(model_path, map_location=device))
             print("Model loaded successfully from '{}'".format(model_path))
         except Exception as e:
             print("Failed to load model. Starting from scratch. Error: ", e)
@@ -210,9 +210,9 @@ if __name__ == '__main__':
         print('-' * 10, 'Meta Iteration', meta_iteration, '-' * 10)
 
         # 调用train_maml_vae函数进行训练
-        train_maml_vae(mlma_model, general_loader, specific_loader, num_tasks, num_inner_steps, num_samples_per_task,
+        train_maml_vae(maml_model, general_loader, specific_loader, num_tasks, num_inner_steps, num_samples_per_task,
                        meta_iteration)
 
         # 保存当前的模型参数
-        vae_model_state_dict = mlma_model.model.state_dict()
+        vae_model_state_dict = maml_model.model.state_dict()
         torch.save(vae_model_state_dict, './saved_model/VAE_cold_start.pth')
