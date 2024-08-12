@@ -19,7 +19,7 @@ def augment_tensor_dataset(tensor_dataset):
     return torch.stack(augmented_tensors)  # 将列表转换回一个新的张量
 
 
-class MLMA:
+class MAML:
     def __init__(self, inner_lr, beta, d):
         self.device = d
         encoder = VAEEncoder(latent_dim)
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     specific_loader = DataLoader(specific_dataset, batch_size=5, shuffle=True)
 
     # 定义MLMA模型
-    mlma_model = MLMA(1e-5, 1e-8, device)
+    mlma_model = MAML(1e-5, 1e-8, device)
 
     model_path = './saved_model/VAE_cold_start.pth'
     model_dir = os.path.dirname(model_path)
