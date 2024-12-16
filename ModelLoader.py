@@ -1,7 +1,9 @@
 import os
+import time
 
 import torch
 from torch.utils.data import DataLoader, random_split
+import matplotlib.pyplot as plt
 
 
 class ModelLoader:
@@ -25,18 +27,18 @@ class ModelLoader:
             self.train_dataset = train_dataset
             self.test_dataset = test_dataset
             self.batch_size = batch_size
-            self.train_iterator = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True)
-            self.test_iterator = DataLoader(self.test_dataset, batch_size=self.batch_size)
+            self.train_iterator = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True)
+            self.test_iterator = DataLoader(self.test_dataset, batch_size=self.batch_size, drop_last=True)
         elif train_dataset is not None and test_dataset is None:
             print('Generate test dataset randomly.')
             # 如果没有提供测试集,则从训练集中随机选择一部分作为测试集
-            test_ratio = 0.1
+            test_ratio = 0.01
             train_size = int(len(train_dataset) * (1 - test_ratio))
             test_size = len(train_dataset) - train_size
             self.batch_size = batch_size
             self.train_dataset, self.test_dataset = random_split(train_dataset, [train_size, test_size])
-            self.train_iterator = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True)
-            self.test_iterator = DataLoader(self.test_dataset, batch_size=self.batch_size)
+            self.train_iterator = DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True)
+            self.test_iterator = DataLoader(self.test_dataset, batch_size=self.batch_size, drop_last=True)
 
         self.if_early_stop = if_early_stop
         self.debug_mode = debug_mode
@@ -52,6 +54,9 @@ class ModelLoader:
         self.scheduler = None
 
         self.best_loss = float('inf')
+        self.train_losses = []
+        self.test_losses = []
+        self.current_epoch = 0
 
     def _train_epoch(self):
         """
@@ -65,7 +70,7 @@ class ModelLoader:
         """
         raise NotImplementedError('Subclasses should implement this method.')
 
-    def train(self, epochs=50, test_interval=10):
+    def train(self, epochs=50, test_interval=1, figure_interval=10, backup_interval=10):
         """
         训练模型，周期性地在测试集上评估性能。
 
@@ -81,15 +86,41 @@ class ModelLoader:
             # 早停策略防止过拟合
             best_test_loss = float('inf')
             patience_counter = 0
+
+        figure_dir = './figure'
+        os.makedirs(figure_dir, exist_ok=True)
+
         for epoch in range(1, epochs + 1):
+            self.current_epoch = epoch
             train_loss = self._train_epoch()
             test_loss = self._test_epoch()
-            print(f'Epoch {epoch}/{epochs} - Train Loss: {train_loss:.2f}, Test Loss: {test_loss:.2f}')
+            self.train_losses.append(train_loss)
+            self.test_losses.append(test_loss)
+            print(f'Epoch {epoch}/{epochs} - Train Loss: {train_loss:.5f}, Test Loss: {test_loss:.5f}')
 
             if self.scheduler:
                 self.scheduler.step()
 
-            self.save_model(test_loss)
+            if epoch % backup_interval == 0:
+                self.save_model(test_loss, create_backup=True)
+            else:
+                self.save_model(test_loss, create_backup=False)
+
+            if epoch % figure_interval == 0:
+                # 绘制损失曲线
+                plt.figure(figsize=(10, 6))
+                plt.plot(range(1, epoch + 1), self.train_losses, label='Train Loss')
+                plt.plot(range(1, epoch + 1), self.test_losses, label='Test Loss')
+                plt.xlabel('Epoch')
+                plt.ylabel('Loss')
+                plt.title(f'Training and Test Loss - Epoch {epoch}')
+                plt.legend()
+                plt.grid(True)
+                timestamp = time.strftime("%Y%m%d-%H%M%S")
+                plt.savefig(
+                    f'{figure_dir}/{os.path.splitext(os.path.basename(self.model_path))[0]}-{timestamp}-epoch{epoch}.png')
+                plt.close()
+
             if epoch % test_interval == 0:
                 self.test()
 
@@ -108,18 +139,55 @@ class ModelLoader:
     def test(self):
         raise NotImplementedError('Subclasses should implement this method.')
 
-    def save_model(self, loss=float('inf')):
+    def _save_model(self, save_path: str, is_best: bool = False, is_backup: bool = False):
         """
-        保存模型的权重。
+        保存模型的底层实现。
+
+        Args:
+            save_path: 保存模型的完整路径
+            is_best: 是否是最佳模型
+            is_backup: 是否是备份模型
         """
+        # 确保保存目录存在
+        save_dir = os.path.dirname(save_path)
+        if save_dir and not os.path.exists(save_dir):
+            os.makedirs(save_dir, exist_ok=True)
+            print(f'Created directory: {save_dir}')
+
+        # 保存模型
+        torch.save(self.model.state_dict(), save_path)
+
+        # 根据保存类型打印相应信息
+        if is_best:
+            print(f'Best model saved to {save_path}')
+        elif is_backup:
+            print(f'Backup model saved to {save_path}')
+        else:
+            print(f'Current model saved to {save_path}')
+
+    def save_model(self, loss=float('inf'), create_backup=False):
+        """
+        保存模型的权重，包括当前模型、最佳模型和可选的备份模型。
+
+        Args:
+            loss: 当前损失值
+            create_backup: 是否创建备份模型
+        """
+        model_name, model_extension = os.path.splitext(self.model_path)
+
+        # 保存当前模型
+        self._save_model(self.model_path)
+
+        # 如果是最佳模型，额外保存一份
         if loss < self.best_loss:
             self.best_loss = loss
-            model_name, model_extension = os.path.splitext(self.model_path)
             best_model_path = f"{model_name}_best{model_extension}"
-            torch.save(self.model.state_dict(), best_model_path)
-            print(f'Model saved to {best_model_path}')
-        torch.save(self.model.state_dict(), self.model_path)
-        print(f'Model saved to {self.model_path}')
+            self._save_model(best_model_path, is_best=True)
+
+        # 根据参数决定是否创建备份
+        if create_backup:
+            backup_model_path = f"{model_name}_backup{model_extension}"
+            self._save_model(backup_model_path, is_backup=True)
 
     def load_model(self):
         """
@@ -131,7 +199,7 @@ class ModelLoader:
         # 检查模型文件夹路径是否存在
         if not os.path.exists(model_dir):
             # 不存在就创建新的目录
-            os.makedirs(model_dir)
+            os.makedirs(model_dir, exist_ok=True)
             print(f"Created directory '{model_dir}' for saving models.")
         if os.path.isfile(self.model_path):
             try:
