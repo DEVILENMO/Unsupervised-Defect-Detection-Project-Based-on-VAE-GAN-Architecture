@@ -216,7 +216,6 @@ class ModelLoader:
         """
         try:
             self.train(train_epochs)
-            self.test()
         except KeyboardInterrupt:
             print('Training interrupted by the user.')
         finally:
