@@ -1,8 +1,9 @@
-datasets==2.14.7
-opencv-python==4.8.1.78
-torch==2.1.0+cu121
-torchvision==0.16.0+cu121
+# PyTorch: 按本机 CUDA 版本从官方索引安装, 例如
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+torch>=2.1
+torchvision>=0.16
 
-numpy~=1.26.4
-pillow~=9.3.0
-matplotlib~=3.8.0
+numpy>=1.26
+opencv-python>=4.8
+pillow>=10.0
+matplotlib>=3.8

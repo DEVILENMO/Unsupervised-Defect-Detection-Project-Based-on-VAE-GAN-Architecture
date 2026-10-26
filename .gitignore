@@ -163,3 +163,16 @@ cython_debug/
 saved_model/
 input/test.bmp
 output/
+# project: generated data & training artifacts
+cut_imgs/
+train_images/
+test_images/
+test_imgs/
+datasets/
+figure/
+VAE_test/
+train_result/
+dis_test/
+input/
+losses.txt
+cycle_gan_losses.txt
